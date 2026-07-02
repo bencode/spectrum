@@ -64,5 +64,24 @@ spec types                         the metamodel vocabulary
 spec skills install [--user] [--copy]
 ```
 
+## Global `spec` (install once, run in any configured app)
+
+Install the binary once:
+
+```sh
+pnpm link --global        # dev; later: npm i -g @lesscap/spectrum
+```
+
+Then `spec` works from inside any repo that has a catalog. The global bin (`src/bin.ts`) finds it,
+loads it via tsx, and runs the CLI. Config discovery, in order:
+
+1. `package.json` → `"spec": { "config": "<relative path>" }` — best for monorepos where the
+   catalog lives in a subpackage that owns the `@lesscap/spectrum` + host deps;
+2. a `spectrum.config.{ts,js,mjs}` at the repo root.
+
+The host still needs its one `spectrum.config.ts` (collectors import the app's own code) and
+`@lesscap/spectrum` resolvable from it. With no config found, `spec` still runs `spec skills` /
+`spec types` (empty) and prints how to add one.
+
 Everything is raw TypeScript consumed via `tsx` / `bun` (no build step). A `tsc → dist` build and
 an `@lesscap` npm publish come later, once the API stabilizes.
