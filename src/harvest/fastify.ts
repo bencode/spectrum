@@ -1,8 +1,9 @@
-// Generic Fastify route harvester — engine side, depends only on fastify + @fastify/swagger.
-// Given a built & ready Fastify app, read its OpenAPI surface into endpoint descriptors.
-// Project-agnostic: any Fastify app with @fastify/swagger registered works.
+// Generic Fastify route harvester — engine side. Given a built & ready app that exposes an
+// OpenAPI surface via `swagger()` (as @fastify/swagger adds), read its endpoints into
+// descriptors. Typed structurally (no `fastify` import) so the engine stays dependency-light and
+// there is no cross-install type mismatch when a host passes its own Fastify app.
 
-import type { FastifyInstance } from 'fastify'
+export type SwaggerApp = { swagger?: () => { paths?: unknown } }
 
 export type Endpoint = {
   method: string
@@ -30,13 +31,13 @@ const normPath = (p: string): string => (p.length > 1 ? p.replace(/\/+$/, '') : 
 
 // Read endpoints from app.swagger().paths. Returns [] (with a warning) if swagger is absent
 // (e.g. production, where the swagger plugin is not registered).
-export const harvestFastifyRoutes = (app: FastifyInstance): Endpoint[] => {
-  const swagger = (app as unknown as { swagger?: () => { paths?: Paths } }).swagger
+export const harvestFastifyRoutes = (app: SwaggerApp): Endpoint[] => {
+  const swagger = app.swagger
   if (typeof swagger !== 'function') {
     console.warn('  (app exposes no swagger(); cannot harvest routes)')
     return []
   }
-  const paths = swagger().paths ?? {}
+  const paths = (swagger().paths ?? {}) as Paths
   return Object.entries(paths).flatMap(([path, ops]) =>
     METHODS.filter(m => ops[m]).map(m => {
       const op = ops[m]

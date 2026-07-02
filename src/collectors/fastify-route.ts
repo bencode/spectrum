@@ -5,9 +5,15 @@
 // the path→group / path→anchor mapping; this file imports neither the host nor its config type.
 
 import { join } from 'node:path'
-import type { FastifyInstance } from 'fastify'
-import { type Endpoint, harvestFastifyRoutes } from '../harvest/fastify.ts'
+import { type Endpoint, harvestFastifyRoutes, type SwaggerApp } from '../harvest/fastify.ts'
 import type { Resource } from '../types.ts'
+
+// Minimal shape the collector needs from a booted app — typed structurally (no `fastify` import)
+// so any host's Fastify instance is accepted regardless of which fastify copy typed it.
+type BootableApp = SwaggerApp & {
+  ready: () => Promise<unknown>
+  close: () => Promise<unknown>
+}
 
 // "documented" = declares any input/output schema beyond summary/tags (the conformance signal).
 const hasResponseBody = (responses?: Record<string, unknown>): boolean =>
@@ -23,7 +29,7 @@ const contractOf = (ep: Endpoint): Record<string, unknown> => ({
 })
 
 export type FastifyRouteOptions<TConfig> = {
-  createApp: (opts: { config: TConfig }) => FastifyInstance
+  createApp: (opts: { config: TConfig }) => BootableApp
   config: TConfig
   endOf: (path: string) => string // classify an endpoint into a group ("end") by its path
   anchorFor: (path: string, end: string) => string // declaration source for an endpoint
