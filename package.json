@@ -1,0 +1,47 @@
+{
+  "name": "@lesscap/spectrum",
+  "version": "0.1.0",
+  "description": "System self-introspection engine + spec CLI builder + bundled agent skills",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./collectors": "./src/collectors/index.ts",
+    "./harvest": "./src/harvest/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "skills",
+    "README.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "citty": "^0.1.6"
+  },
+  "peerDependencies": {
+    "@fastify/swagger": "^9",
+    "fastify": "^5",
+    "typescript": "^6"
+  },
+  "peerDependenciesMeta": {
+    "@fastify/swagger": {
+      "optional": true
+    },
+    "fastify": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@fastify/swagger": "^9.7.0",
+    "@types/node": "^24.0.0",
+    "fastify": "^5.8.5",
+    "typescript": "^6.0.3"
+  }
+}
