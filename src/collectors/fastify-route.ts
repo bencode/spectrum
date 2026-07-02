@@ -10,9 +10,10 @@ import type { Resource } from '../types.ts'
 
 // Minimal shape the collector needs from a booted app — typed structurally (no `fastify` import)
 // so any host's Fastify instance is accepted regardless of which fastify copy typed it.
+// ready/close are PromiseLike (fastify's `ready()` resolves to the instance, not a real Promise).
 type BootableApp = SwaggerApp & {
-  ready: () => Promise<unknown>
-  close: () => Promise<unknown>
+  ready: () => PromiseLike<unknown>
+  close: () => PromiseLike<unknown>
 }
 
 // "documented" = declares any input/output schema beyond summary/tags (the conformance signal).

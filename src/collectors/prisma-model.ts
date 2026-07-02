@@ -8,13 +8,15 @@
 import { join } from 'node:path'
 import type { Resource } from '../types.ts'
 
-type PrismaNamespace = { ModelName: Record<string, string> } & Record<string, unknown>
 type PrismaClientLike = { $queryRawUnsafe: (q: string) => Promise<unknown> } & Record<string, unknown>
-type PrismaServiceFn = (app: unknown) => [PrismaClientLike, () => Promise<void>]
+type PrismaBuilt = [PrismaClientLike, () => Promise<void>]
 
 export type PrismaModelOptions = {
-  Prisma: PrismaNamespace
-  PrismaService: PrismaServiceFn
+  // The generated Prisma namespace; only `.ModelName` (enumerated) and `<Name>ScalarFieldEnum`
+  // (read via cast) are used. Typed loosely so any host's generated client is accepted.
+  Prisma: { ModelName: object }
+  // The host's PrismaService — called as `PrismaService(null)`, returns `[client, stop]`.
+  PrismaService: (app: unknown) => unknown
   schemaPath: string // anchor: relative path to schema.prisma
   envPath?: string // relative .env loaded before reconcile (DATABASE_URL); optional
   typeId?: string
@@ -44,7 +46,7 @@ export const createPrismaModelCollector = (options: PrismaModelOptions) => {
   const typeId = options.typeId ?? 'model'
 
   const scalarFields = (model: string): string[] => {
-    const en = (Prisma as Record<string, Record<string, string> | undefined>)[
+    const en = (Prisma as unknown as Record<string, Record<string, string> | undefined>)[
       `${model}ScalarFieldEnum`
     ]
     return en ? Object.keys(en) : []
@@ -66,9 +68,9 @@ export const createPrismaModelCollector = (options: PrismaModelOptions) => {
         // env file optional — PrismaService reads process.env.DATABASE_URL directly
       }
     }
-    let built: [PrismaClientLike, () => Promise<void>]
+    let built: PrismaBuilt
     try {
-      built = PrismaService(null)
+      built = PrismaService(null) as PrismaBuilt
     } catch {
       console.warn('  (cannot init prisma client, skipping --live reconcile)')
       return declared
