@@ -12,6 +12,7 @@
     ".": "./src/index.ts",
     "./collectors": "./src/collectors/index.ts",
     "./harvest": "./src/harvest/index.ts",
+    "./structure": "./src/structure/index.ts",
     "./package.json": "./package.json"
   },
   "files": [

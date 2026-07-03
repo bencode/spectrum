@@ -7,6 +7,7 @@
 //   spec <type> verify                run the type's verify command
 //   spec types                        the metamodel vocabulary
 //   spec skills install [--user]      install the bundled agent skills
+//   spec structure packages|deps|modules|imports [--json]   static code-structure metadata
 // Only leaf commands carry `run` — citty executes every `run` along the resolved path, so
 // parents stay run-less and resolve to citty's help.
 
@@ -14,6 +15,7 @@ import { defineCommand, runMain } from 'citty'
 import { inspect, inspectOne, verifyType } from './inspect.ts'
 import { renderResources, renderTypes } from './render.ts'
 import { skillsCommand } from './skills/install.ts'
+import { structureCommand } from './structure/command.ts'
 import type { EntityType } from './types.ts'
 
 const live = { live: { type: 'boolean', description: 'reconcile against the running system' } } as const
@@ -70,6 +72,7 @@ export const createSpecCli = (catalog: EntityType[], meta: SpecCliMeta = {}) =>
       }),
       list: listCmd(catalog),
       skills: skillsCommand,
+      structure: structureCommand,
     },
   })
 
