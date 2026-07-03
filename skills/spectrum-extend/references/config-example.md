@@ -74,11 +74,5 @@ export const catalog: EntityType[] = [
 ]
 ```
 
-The thin bin (`cli.ts`):
-
-```ts
-import { runSpec } from '@lesscap/spectrum'
-import { catalog } from './spectrum.config.ts'
-
-await runSpec(catalog, { name: 'spec', version: '0.1.0' })
-```
+Export `catalog` from the root `spectrum.config.ts` and you're done — the global `spec` bin (or
+`pnpm spec`) discovers and runs it. No per-host CLI bin is needed.

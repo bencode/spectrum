@@ -4,7 +4,7 @@
 // the host config (NodeNext `.js`→`.ts` imports) needs tsx, which we invoke programmatically so
 // no global tsx is required on PATH.
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { tsImport } from 'tsx/esm/api'
@@ -14,15 +14,9 @@ import type { EntityType } from './types.ts'
 
 const CONFIG_NAMES = ['spectrum.config.ts', 'spectrum.config.js', 'spectrum.config.mjs']
 
-// Locate the host's config: package.json#spec.config (explicit), else a root spectrum.config.*.
-const findConfig = (root: string): string | undefined => {
-  const pkgPath = join(root, 'package.json')
-  if (existsSync(pkgPath)) {
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as { spec?: { config?: string } }
-    if (pkg.spec?.config) return join(root, pkg.spec.config)
-  }
-  return CONFIG_NAMES.map(n => join(root, n)).find(existsSync)
-}
+// Discover the host's config: a spectrum.config.* at the repo root.
+const findConfig = (root: string): string | undefined =>
+  CONFIG_NAMES.map(n => join(root, n)).find(existsSync)
 
 const loadCatalog = async (configPath: string): Promise<EntityType[]> => {
   const mod = (await tsImport(pathToFileURL(configPath).href, import.meta.url)) as {
@@ -40,9 +34,9 @@ const root = repoRoot()
 const configPath = findConfig(root)
 if (!configPath) {
   console.warn(
-    `spec: no spectrum config found under ${root}\n` +
-      '  add a spectrum.config.ts and point package.json "spec": { "config": "…" } at it\n' +
-      '  (see the spectrum-extend skill). Running with no entity types.',
+    `spec: no spectrum.config.ts at repo root (${root})\n` +
+      '  add one exporting `catalog: EntityType[]` (see the spectrum-extend skill).\n' +
+      '  Running with no entity types.',
   )
 }
 await runSpec(configPath ? await loadCatalog(configPath) : [], { name: 'spec' })

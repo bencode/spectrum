@@ -43,17 +43,17 @@ From a host repo:
 pnpm add link:../spectrum      # or: pnpm link ../spectrum
 ```
 
-Then, in the host's `spectrum.config.ts`, build the catalog from the collector factories and run:
+Then add a root `spectrum.config.ts` that builds the catalog from the collector factories and exports
+it (see `skills/spectrum-extend/references/config-example.md` for a full example):
 
 ```ts
-import { createSpecCli } from '@lesscap/spectrum'
-import { runMain } from 'citty'
-import { catalog } from './spectrum.config.ts'
+import { createPrismaModelCollector /* … */ } from '@lesscap/spectrum/collectors'
+import type { EntityType } from '@lesscap/spectrum'
 
-runMain(createSpecCli(catalog, { name: 'spec', version: '0.1.0' }))
+export const catalog: EntityType[] = [ /* … */ ]
 ```
 
-CLI grammar:
+Run it with the global `spec` bin (below) or a `"spec": "spec"` script (`pnpm spec …`). CLI grammar:
 
 ```
 spec list [--live]                 all resources
@@ -72,14 +72,10 @@ Install the binary once:
 pnpm link --global        # dev; later: npm i -g @lesscap/spectrum
 ```
 
-Then `spec` works from inside any repo that has a catalog. The global bin (`src/bin.ts`) finds it,
-loads it via tsx, and runs the CLI. Config discovery, in order:
+Then `spec` works from inside any repo that has a catalog. The global bin (`src/bin.ts`) walks up to
+the repo root, loads its `spectrum.config.{ts,js,mjs}` via tsx, and runs the CLI.
 
-1. `package.json` → `"spec": { "config": "<relative path>" }` — best for monorepos where the
-   catalog lives in a subpackage that owns the `@lesscap/spectrum` + host deps;
-2. a `spectrum.config.{ts,js,mjs}` at the repo root.
-
-The host still needs its one `spectrum.config.ts` (collectors import the app's own code) and
+The host needs its one root `spectrum.config.ts` (collectors import the app's own code) and
 `@lesscap/spectrum` resolvable from it. With no config found, `spec` still runs `spec skills` /
 `spec types` (empty) and prints how to add one.
 
